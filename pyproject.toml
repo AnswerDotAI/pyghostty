@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyghostty"
+dynamic = ["version"]
+description = "Python bindings for libghostty"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "pyghostty contributors" }]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+]
+
+dependencies = ["cffi"]
+
+[project.optional-dependencies]
+dev = [
+  "fastship",
+  "build",
+  "twine",
+  "ziglang",
+  "pytest",
+]
+
+[project.urls]
+Homepage = "https://github.com/AnswerDotAI/pyghostty"
+
+[tool.setuptools.dynamic]
+version = { attr = "pyghostty.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["pyghostty"]
+
+[tool.setuptools.package-data]
+pyghostty = ["_lib/*"]
