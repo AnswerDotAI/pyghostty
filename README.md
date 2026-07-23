@@ -4,6 +4,21 @@ Python bindings for [libghostty](https://mitchellh.com/writing/libghostty-is-com
 
 The binding is ABI-stable: pure Python (cffi ABI mode) over a bundled `libghostty-vt` shared library, so one wheel per platform covers every Python version. No compiler is needed at install time.
 
+## Usage
+
+```python
+from pyghostty import Terminal
+
+with Terminal(cols=80, rows=24) as t:
+    t.feed('hello\r\nworld')
+    t.cursor      # (x, y), 0-indexed
+    t.text()      # plain text of the visible screen only
+    t.contents()  # everything: scrollback plus screen, soft-wraps unwrapped
+    t.resize(120, 24)  # reflows the primary screen
+```
+
+Two layers: `pyghostty._cdef`/`_ffi` expose the complete generated C API as raw `ffi`/`lib` (regenerate with `gen_cdef.py` after moving the pinned ghostty rev), and `pyghostty.core.Terminal` wraps just what consumers need so far.
+
 ## Building the library
 
 The shared library is built from a ghostty checkout with the Zig toolchain (installed via pip as `ziglang`):

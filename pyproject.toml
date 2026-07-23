@@ -22,7 +22,7 @@ dev = [
   "fastship",
   "build",
   "twine",
-  "ziglang",
+  "ziglang~=0.15.2",
   "pytest",
 ]
 
