@@ -1,3 +1,5 @@
 include README.md
 include LICENSE
+include LICENSE.ghostty
 include CHANGELOG.md
+recursive-exclude pyghostty/_lib *
