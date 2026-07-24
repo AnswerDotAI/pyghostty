@@ -1,13 +1,12 @@
 import subprocess,sys
 from pathlib import Path
-from setuptools import setup
+from setuptools import Distribution,setup
 from setuptools.command.bdist_wheel import bdist_wheel as _bdist_wheel
 
-class BinaryWheel(_bdist_wheel):
-    def finalize_options(self):
-        super().finalize_options()
-        self.root_is_pure = False
+class BinaryDistribution(Distribution):
+    def has_ext_modules(self): return True
 
+class BinaryWheel(_bdist_wheel):
     def get_tag(self):
         _,_,plat = super().get_tag()
         return 'py3','none',plat
@@ -16,4 +15,4 @@ class BinaryWheel(_bdist_wheel):
         subprocess.run([sys.executable, str(Path(__file__).with_name('build_lib.py'))], check=True)
         super().run()
 
-setup(cmdclass={'bdist_wheel': BinaryWheel})
+setup(cmdclass={'bdist_wheel': BinaryWheel}, distclass=BinaryDistribution)
