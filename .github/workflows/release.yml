@@ -27,9 +27,6 @@ jobs:
           - name: macos-x86_64
             os: macos-15-intel
             arch: x86_64
-          - name: windows-amd64
-            os: windows-latest
-            arch: AMD64
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
@@ -41,6 +38,7 @@ jobs:
       - uses: pypa/cibuildwheel@v3.4.1
         env:
           CIBW_ARCHS: ${{ matrix.arch }}
+          CIBW_ENVIRONMENT_PASS_LINUX: GHOSTTY_SRC
           GHOSTTY_SRC: ghostty-src
         with:
           output-dir: wheelhouse
