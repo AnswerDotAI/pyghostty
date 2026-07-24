@@ -44,7 +44,7 @@ ghostty-rev = "88b4cd047fa627cdca6781bc7e7dc8b75a2cecb9"
 zig-version = "0.15.2"
 
 [tool.cibuildwheel]
-build = "cp310-*"
+build = "cp311-*"
 skip = "*-musllinux_* *-win32"
 test-requires = "pytest"
 test-command = "pytest {project}/tests"
