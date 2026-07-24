@@ -53,6 +53,21 @@ class Terminal:
         check(fn(self._t[0], pt[0], ref), f'grid_ref {tag} {x},{y}')
         return ref
 
+    _STYLE_ATTRS = ('bold','italic','faint','blink','inverse','invisible','strikethrough','overline')
+
+    def style(self, x, y, tag='active'):
+        """The style at (`x`,`y`) as a dict: the boolean attributes, `underline` (0 = none), and
+        `fg`/`bg`/`underline_color` as None, `('palette', n)`, or `('rgb', (r,g,b))`."""
+        st = init_sized('GhosttyStyle')
+        check(lib.ghostty_grid_ref_style(self.ref(x, y, tag), st), f'style {x},{y}')
+        def color(c):
+            if c.tag == lib.GHOSTTY_STYLE_COLOR_PALETTE: return ('palette', c.value.palette)
+            if c.tag == lib.GHOSTTY_STYLE_COLOR_RGB: return ('rgb', (c.value.rgb.r, c.value.rgb.g, c.value.rgb.b))
+            return None
+        d = {a: bool(getattr(st, a)) for a in self._STYLE_ATTRS}
+        return d | dict(underline=st.underline, fg=color(st.fg_color), bg=color(st.bg_color),
+                        underline_color=color(st.underline_color))
+
     def _format_sel(self, sel, unwrap=False):
         "Plain-text rendering of `sel`, trailing whitespace trimmed."
         opts = init_sized('GhosttyTerminalSelectionFormatOptions')

@@ -50,3 +50,12 @@ def test_resize_history_survives():
         t.feed('\r\n'.join(f'line {i}' for i in range(30)))
         t.resize(40, 5)
         assert t.contents().splitlines() == [f'line {i}' for i in range(30)]
+
+def test_style_readback():
+    with Terminal(20, 5) as t:
+        t.feed('\x1b[2mdim\x1b[0m \x1b[1;31mboldred\x1b[0m plain')
+        assert t.style(0, 0)['faint'] and not t.style(0, 0)['bold']
+        br = t.style(4, 0)
+        assert br['bold'] and br['fg'] == ('palette', 1) and not br['faint']
+        pl = t.style(15, 0)
+        assert not any(pl[a] for a in Terminal._STYLE_ATTRS) and pl['fg'] is None
