@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=77", "wheel", "ziglang==0.15.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,7 +8,8 @@ dynamic = ["version"]
 description = "Python bindings for libghostty"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "Apache-2.0" }
+license = "Apache-2.0"
+license-files = ["LICENSE", "LICENSE.ghostty"]
 authors = [{ name = "pyghostty contributors" }]
 classifiers = [
   "Programming Language :: Python :: 3",
@@ -21,8 +22,8 @@ dependencies = ["cffi"]
 dev = [
   "fastship",
   "build",
-  "twine",
-  "ziglang~=0.15.2",
+  "cibuildwheel~=3.4",
+  "ziglang==0.15.2",
   "pytest",
 ]
 
@@ -37,3 +38,16 @@ include = ["pyghostty"]
 
 [tool.setuptools.package-data]
 pyghostty = ["_lib/*"]
+
+[tool.pyghostty]
+ghostty-rev = "88b4cd047fa627cdca6781bc7e7dc8b75a2cecb9"
+zig-version = "0.15.2"
+
+[tool.cibuildwheel]
+build = "cp310-*"
+skip = "*-musllinux_* *-win32"
+test-requires = "pytest"
+test-command = "pytest {project}/tests"
+
+[tool.cibuildwheel.macos]
+environment = { MACOSX_DEPLOYMENT_TARGET = "13.0" }
