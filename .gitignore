@@ -15,3 +15,4 @@ venv/
 .ipynb_checkpoints/
 pyghostty/_lib/*
 !pyghostty/_lib/.gitkeep
+meta/
