@@ -29,13 +29,13 @@ jobs:
             arch: x86_64
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
         with:
           repository: ghostty-org/ghostty
           ref: 88b4cd047fa627cdca6781bc7e7dc8b75a2cecb9
           path: ghostty-src
-      - uses: pypa/cibuildwheel@v3.4.1
+      - uses: pypa/cibuildwheel@v4.2.0
         env:
           CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_ENVIRONMENT_PASS_LINUX: GHOSTTY_SRC
