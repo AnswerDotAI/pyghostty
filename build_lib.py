@@ -55,7 +55,7 @@ def _built_lib(prefix, returncode):
     return found[0],name
 
 def _zig_build(src, env, prefix):
-    return subprocess.run([sys.executable, '-m', 'ziglang', 'build', '-Demit-lib-vt=true', '-Doptimize=ReleaseFast', '--prefix', str(prefix)],
+    return subprocess.run([sys.executable, '-m', 'ziglang', 'build', '-Demit-lib-vt=true', '-Doptimize=ReleaseFast', '-Dcpu=baseline', '--prefix', str(prefix)],
         cwd=src, env=env)
 
 def main():
