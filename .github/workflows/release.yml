@@ -30,10 +30,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
+      - id: rev
+        run: echo "rev=$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['tool']['pyghostty']['ghostty-rev'])")" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v7
         with:
           repository: ghostty-org/ghostty
-          ref: 88b4cd047fa627cdca6781bc7e7dc8b75a2cecb9
+          ref: ${{ steps.rev.outputs.rev }}
           path: ghostty-src
       - uses: pypa/cibuildwheel@v4.2.0
         env:
