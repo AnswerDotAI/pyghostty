@@ -1,4 +1,5 @@
-from pyghostty import Terminal
+import pytest
+from pyghostty import Terminal, UnknownSequence
 
 def test_feed_cursor_text():
     with Terminal(40, 10) as t:
@@ -59,3 +60,35 @@ def test_style_readback():
         assert br['bold'] and br['fg'] == ('palette', 1) and not br['faint']
         pl = t.style(15, 0)
         assert not any(pl[a] for a in Terminal._STYLE_ATTRS) and pl['fg'] is None
+
+def test_unknown_sequence_and_ground():
+    "`on_unknown_sequence` receives an unimplemented OSC whole, even when it arrives split. `feed_until_ground` reports where it ends."
+    with Terminal(20, 5) as t:
+        seen = []
+        t.on_unknown_sequence(seen.append)
+        t.feed(b'a\x1b]7770;0;/tmp/')
+        assert t.feed_until_ground(b'xy') is None     # still inside the OSC
+        assert t.feed_until_ground(b'z\x07bc') == 2   # the BEL ends it, and b'bc' stays unfed
+        assert seen == [UnknownSequence('osc', b'7770;0;/tmp/xyz', False, 'bel')]
+        assert t.text() == 'a'
+        assert t.feed_until_ground(b'bc') == 0        # already outside any sequence
+        t.feed('\x1b]2;title\x07')                    # OSC 2 is implemented, so it is not reported
+        assert len(seen) == 1
+        t.on_unknown_sequence(lambda s: 1/0)
+        with pytest.raises(ZeroDivisionError): t.feed('\x1b]7770;1;/\x07')
+
+def test_modes_replies_and_colors():
+    "`mode` reads DEC private and ANSI modes. `on_reply` receives the terminal's answers to queries, including colours set with `fg` and `bg`."
+    with Terminal(20, 5, fg=(0xee, 0xee, 0xee), bg=(0x10, 0x20, 0x30)) as t:
+        replies = []
+        t.on_reply(replies.append)
+        assert not t.mode(2004)
+        t.feed('\x1b[?2004h')
+        assert t.mode(2004)
+        assert not t.mode(4, ansi=True)
+        t.feed('\x1b[4h')                             # ANSI insert mode
+        assert t.mode(4, ansi=True) and not t.mode(4)  # DEC mode 4 is a different mode
+        t.feed('\x1b[6n\x1b]10;?\x07\x1b]11;?\x07')
+        assert replies == [b'\x1b[1;1R', b'\x1b]10;rgb:eeee/eeee/eeee\x07', b'\x1b]11;rgb:1010/2020/3030\x07']
+        t.on_reply(lambda r: 1/0)
+        with pytest.raises(ZeroDivisionError): t.feed('\x1b[6n')

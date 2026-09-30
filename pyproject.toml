@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=77", "ziglang==0.15.2"]
+requires = ["setuptools>=77", "ziglang==0.16.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -23,7 +23,7 @@ dev = [
   "fastship",
   "build",
   "cibuildwheel~=3.4",
-  "ziglang==0.15.2",
+  "ziglang==0.16.0",
   "pytest",
 ]
 
@@ -40,8 +40,8 @@ include = ["pyghostty"]
 pyghostty = ["_lib/*"]
 
 [tool.pyghostty]
-ghostty-rev = "88b4cd047fa627cdca6781bc7e7dc8b75a2cecb9"
-zig-version = "0.15.2"
+ghostty-rev = "6467b1dab0be087fa8f0a7ccc7b3c5b88b9be7a5"
+zig-version = "0.16.0"
 
 [tool.cibuildwheel]
 build = "cp311-*"
