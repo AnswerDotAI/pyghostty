@@ -26,9 +26,9 @@ def check(res, what):
 
 # ABI-mode cffi cannot pass unions by value (libffi limitation). Ghostty's
 # tagged-union parameters (GhosttyPoint; later GhosttyTerminalScrollViewport) are
-# >16-byte composites, which arm64 AAPCS64 passes indirectly and x86-64 SysV
-# passes in stack memory -- so a layout-identical struct twin has the same call
-# ABI as the real union-bearing type. We declare twins here and `union_fn`
+# >16-byte composites, which arm64 AAPCS64 and Windows x64 pass indirectly,
+# while x86-64 SysV passes them in stack memory. A layout-identical struct twin
+# has the same call ABI as the real union-bearing type. We declare twins here and `union_fn`
 # casts a symbol's address to a twin-typed signature.
 ffi.cdef('''
 typedef struct { uint16_t x; uint32_t y; uint64_t _pad; } GhosttyPointValueS;

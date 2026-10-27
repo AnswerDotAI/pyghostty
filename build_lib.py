@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 "Build libghostty-vt from a ghostty checkout and bundle the shared lib into pyghostty/_lib."
-import importlib.metadata,os,shutil,subprocess,sys,tempfile,tomllib
+import importlib.metadata,os,shutil,subprocess,sys,sysconfig,tempfile,tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).parent
@@ -27,7 +27,9 @@ def _built_lib(prefix, returncode):
     return found[0],name
 
 def _zig_build(src, prefix):
-    return subprocess.run([sys.executable, '-m', 'ziglang', 'build', '-Demit-lib-vt=true', '-Doptimize=ReleaseFast', '-Dcpu=baseline', '--prefix', str(prefix)],
+    # Zig supplies the MinGW toolchain, so Windows x64 builds need no MSVC SDK.
+    target = ['-Dtarget=x86_64-windows-gnu'] if sys.platform == 'win32' and sysconfig.get_platform() == 'win-amd64' else []
+    return subprocess.run([sys.executable, '-m', 'ziglang', 'build', '-Demit-lib-vt=true', '-Doptimize=ReleaseFast', '-Dcpu=baseline', *target, '--prefix', str(prefix)],
         cwd=src)
 
 def main():

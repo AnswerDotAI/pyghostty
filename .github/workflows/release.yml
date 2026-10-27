@@ -27,11 +27,25 @@ jobs:
           - name: macos-x86_64
             os: macos-15-intel
             arch: x86_64
+          - name: windows-x86_64
+            os: windows-latest
+            arch: AMD64
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
       - id: rev
-        run: echo "rev=$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['tool']['pyghostty']['ghostty-rev'])")" >> "$GITHUB_OUTPUT"
+        shell: python
+        run: |
+          import os
+          import tomllib
+
+          with open("pyproject.toml", "rb") as config:
+              rev = tomllib.load(config)["tool"]["pyghostty"]["ghostty-rev"]
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              print(f"rev={rev}", file=output)
       - uses: actions/checkout@v7
         with:
           repository: ghostty-org/ghostty
