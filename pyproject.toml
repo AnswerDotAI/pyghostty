@@ -46,8 +46,8 @@ zig-version = "0.16.0"
 [tool.cibuildwheel]
 build = "cp311-*"
 skip = "*-musllinux_* *-win32"
-test-requires = "pytest"
-test-command = "pytest {project}/tests"
+test-requires = ["pytest", "nodejs-wheel==24.19.0"]
+test-command = "python {project}/tests/run_ci.py {project}/tests"
 
 [tool.cibuildwheel.macos]
 environment = { MACOSX_DEPLOYMENT_TARGET = "13.0" }

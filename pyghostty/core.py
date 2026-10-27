@@ -15,13 +15,18 @@ def _set_sizes(p):
         if name=='size': p.size = ffi.sizeof(t)
         elif f.type.kind=='struct': _set_sizes(ffi.addressof(p[0], name))
 
-def read_buf(call, what='format'):
-    "Run the C API's query-size-then-fill buffer dance over `call(buf, buf_len, n_out)`, returning the bytes decoded."
+def read_bytes(call, what='format'):
+    "Run the C API's query-size-then-fill buffer dance over `call(buf, buf_len, n_out)`, returning bytes."
     n = ffi.new('size_t*')
-    call(ffi.NULL, 0, n)  # size query: OUT_OF_SPACE, with the required size in n
+    res = call(ffi.NULL, 0, n)
+    if res not in (lib.GHOSTTY_SUCCESS, lib.GHOSTTY_OUT_OF_SPACE): check(res, what)
     buf = ffi.new('uint8_t[]', max(n[0], 1))
     check(call(buf, len(buf), n), what)
-    return ffi.buffer(buf, n[0])[:].decode()
+    return ffi.buffer(buf, n[0])[:]
+
+def read_buf(call, what='format'):
+    "UTF-8 text returned by a query-size-then-fill C API."
+    return read_bytes(call, what).decode()
 
 class UnknownSequence(NamedTuple):
     "A complete APC or OSC sequence that libghostty-vt does not implement, as passed to `Terminal.on_unknown_sequence` handlers."
@@ -48,14 +53,35 @@ class Terminal:
         scrollback=10_000, # Most scrollback lines kept
         fg=None, # Default foreground colour as an `(r, g, b)` tuple, or None to leave it unset
         bg=None, # Default background colour as an `(r, g, b)` tuple, or None to leave it unset
+        *,
+        continuation_limit=1024*1024, # Maximum unfinished VT/UTF-8 bytes retained for serialize()
     ):
         self._t = ffi.new('GhosttyTerminal*')
         check(lib.ghostty_terminal_new(ffi.NULL, self._t, cols, rows), 'terminal_new')
+        self._adopt(self._t)
         check(lib.ghostty_terminal_set(self._t[0], lib.GHOSTTY_TERMINAL_OPT_SCROLLBACK_MAX_LINES, ffi.new('size_t*', scrollback)), 'set scrollback')
         for opt, rgb in ((lib.GHOSTTY_TERMINAL_OPT_COLOR_FOREGROUND, fg), (lib.GHOSTTY_TERMINAL_OPT_COLOR_BACKGROUND, bg)):
             if rgb is not None: check(lib.ghostty_terminal_set(self._t[0], opt, ffi.new('GhosttyColorRgb*', dict(zip('rgb', rgb)))), 'set color')
+        check(lib.ghostty_terminal_set(self._t[0], lib.GHOSTTY_TERMINAL_OPT_CONTINUATION_MAX_BYTES, ffi.new('size_t*', continuation_limit)), 'set continuation limit')
+
+    def _adopt(self, handle):
+        self._t = handle
         self._unknown_cb = self._reply_cb = self._cb_err = None
         self._free = weakref.finalize(self, lib.ghostty_terminal_free, self._t[0])
+
+    def serialize(self, *, palette=False):
+        """Experimental VT bytes to restore a same-sized terminal, including scrollback and pending input.
+
+        Resets the destination. If the alternate screen is active, includes its
+        underlying primary screen too. Palette export is opt-in to preserve a
+        browser's theme. Call synchronously between feeds/resizes, then deliver
+        subsequent PTY bytes in order. Raises GhosttyError if unfinished input
+        exceeded continuation_limit (or tracking was disabled). Graphics, saved
+        cursors other than the active alternate-screen return cursor, and an
+        inactive alternate screen are not exported. See the README for limits.
+        """
+        from ._serialize import serialize
+        return serialize(self, palette)
 
     def feed(self, data):
         if isinstance(data, str): data = data.encode()
