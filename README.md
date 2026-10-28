@@ -1,6 +1,6 @@
 # pyghostty
 
-Unofficial (but complete) python bindings for [libghostty-vt](https://mitchellh.com/writing/libghostty-is-coming). `libghostty` is Ghostty's embeddable terminal emulation core, a headless, high-fidelity VT emulator for Python. These bindings cover terminal state, screen and scrollback snapshots, kitty graphics, and everything else Ghostty's production terminal core handles.
+Unofficial (but complete) python bindings for [libghostty-vt](https://mitchellh.com/writing/libghostty-is-coming). `libghostty` is Ghostty's embeddable terminal emulation core, a headless, high-fidelity VT emulator. These bindings cover terminal state, screen and scrollback snapshots, kitty graphics, and everything else Ghostty's production terminal core handles.
 
 The binding is Python-ABI-independent: pure Python (cffi ABI mode) over a bundled `libghostty-vt` shared library, so one wheel per platform covers every Python version. No compiler is needed at install time.
 
