@@ -23,21 +23,28 @@ The base layer, `pyghostty._cdef`/`_ffi`, exposes the complete generated C API a
 
 ## Building the library
 
-The shared library is built from a ghostty checkout with the Zig toolchain (installed via pip as `ziglang`):
+Source installs, including editable installs, build the shared library automatically. The build fetches the pinned Ghostty revision into
+`build/ghostty/<revision>/` and uses the Zig toolchain supplied by the package's build dependencies. Git and network access are needed for the first build;
+later builds reuse the checkout and Zig's compilation cache. A sibling Ghostty checkout is not needed.
+
+To build from an existing checkout instead:
 
 ```bash
 GHOSTTY_SRC=/path/to/ghostty python build_lib.py
 ```
 
-The checkout must be at the revision pinned in `pyproject.toml`. This runs `zig build -Demit-lib-vt=true` and copies the resulting shared library into `pyghostty/_lib/`, where the package loader and wheel builds pick it up.
+The checkout must be at the revision pinned in `pyproject.toml`; the build never changes it. Running `build_lib.py` directly requires the pinned
+`ziglang` version in your Python environment. This runs `zig build -Demit-lib-vt=true` and copies the resulting shared library into `pyghostty/_lib/`.
 
 ## Development
 
 ```bash
 pip install -e .[dev]
-GHOSTTY_SRC=/path/to/ghostty python build_lib.py
 pytest -q
 ```
+
+After changing the Ghostty pin, reinstall the editable package (`ws-sync` does this in a uv workspace). After changing a checkout supplied with
+`GHOSTTY_SRC`, rerun `build_lib.py`. Regenerate `_cdef.py` with `gen_cdef.py` when updating the pinned revision.
 
 ### Versioning
 

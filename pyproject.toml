@@ -43,6 +43,9 @@ pyghostty = ["_lib/*"]
 ghostty-rev = "6467b1dab0be087fa8f0a7ccc7b3c5b88b9be7a5"
 zig-version = "0.16.0"
 
+[tool.uv]
+cache-keys = [{ file = "pyproject.toml" }, { file = "setup.py" }, { file = "build_lib.py" }]
+
 [tool.cibuildwheel]
 build = "cp311-*"
 skip = "*-musllinux_* *-win32"

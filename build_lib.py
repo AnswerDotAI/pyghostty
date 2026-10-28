@@ -3,18 +3,24 @@
 import importlib.metadata,os,shutil,subprocess,sys,tempfile,tomllib
 from pathlib import Path
 
-ROOT = Path(__file__).parent
+ROOT = Path(__file__).resolve().parent
+GHOSTTY_URL = 'https://github.com/ghostty-org/ghostty.git'
 
 def build_config():
     with open(ROOT/'pyproject.toml', 'rb') as f: return tomllib.load(f)['tool']['pyghostty']
 
 def ghostty_src():
-    "The ghostty checkout to build from: $GHOSTTY_SRC, defaulting to a sibling clone."
-    src = Path(os.environ.get('GHOSTTY_SRC', '../ghostty')).expanduser().resolve()
+    "Use $GHOSTTY_SRC or fetch the pinned revision into this project's build directory."
+    expected = build_config()['ghostty-rev']
+    override = os.environ.get('GHOSTTY_SRC')
+    src = Path(override).expanduser().resolve() if override else ROOT/'build'/'ghostty'/expected
+    if not override and not (src/'build.zig').exists():
+        src.mkdir(parents=True, exist_ok=True)
+        for args in (['init', '--quiet'], ['fetch', '--depth=1', GHOSTTY_URL, expected], ['checkout', '--quiet', '--detach', 'FETCH_HEAD']):
+            subprocess.run(['git', '-C', str(src), *args], check=True)
     if not (src/'build.zig').exists(): sys.exit(f"No ghostty checkout at {src}; set GHOSTTY_SRC")
     res = subprocess.run(['git', '-C', str(src), 'rev-parse', 'HEAD'], capture_output=True, text=True)
     if res.returncode: sys.exit(res.stderr.strip())
-    expected = build_config()['ghostty-rev']
     if (rev := res.stdout.strip()) != expected: sys.exit(f"Ghostty checkout is {rev}; expected {expected}")
     return src
 
